@@ -68,7 +68,7 @@ class TestLazyMapping(object):
         assert d[3] == 6
 
         # every computation only done once
-        for val in d.computes_called.itervalues():
+        for val in d.computes_called.values():
             assert val <= 1
 
     def test_get_batch(self, lazy_dict):
@@ -79,7 +79,7 @@ class TestLazyMapping(object):
             assert results_par == correct
 
             # every computation only done once
-            for val in lazy_dict.computes_called.itervalues():
+            for val in lazy_dict.computes_called.values():
                 assert val <= 1
             # WARNING: this test could fail because computes_called is a Counter, which may
             # not be thread-safe.
@@ -106,9 +106,7 @@ def test_eager_mapping():
     assert cd2.cache == {'d': 3}
 
 
-class ORMTester(object):
-    __metaclass__ = ABCMeta
-
+class ORMTester(object, metaclass=ABCMeta):
     @pytest.fixture(scope='session')
     def metadata(self):
         return MetaDataExample()
@@ -310,9 +308,7 @@ class FileSerializerExample(FileSerializer):
         return line
 
 
-class FileSerializerTester(object):
-    __metaclass__ = ABCMeta
-
+class FileSerializerTester(object, metaclass=ABCMeta):
     @abstractmethod
     def serializer(self):
         pass
@@ -481,7 +477,7 @@ class TestLazyIterator(object):
         return LazyIteratorExample()
 
     def test_iter(self, iterator):
-        assert list(iterator) == range(15)
+        assert list(iterator) == list(range(15))
 
     def test_next_batch(self, iterator):
         assert iterator.next_batch(6) == [0, 1, 2, 3, 4, 5]
@@ -519,7 +515,7 @@ class TestBatchIterator(object):
 class TestSequenceSlice(object):
     @pytest.fixture
     def seq(self):
-        return range(10)
+        return list(range(10))
 
     def test_full(self, seq):
         ss = list(SequenceSlice(seq, slice(2, 8, 3)))

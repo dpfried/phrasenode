@@ -12,9 +12,8 @@ from tensorflow import Tensor
 from gtd.io import JSONPicklable, makedirs
 
 
-class Batch(Sequence):
+class Batch(Sequence, metaclass=ABCMeta):
     """An immutable Sequence of Example objects."""
-    __metaclass__ = ABCMeta
 
     @abstractproperty
     def uid(self):
@@ -40,13 +39,12 @@ class Model(object):
     pass
 
 
-class Feedable(Model):
+class Feedable(Model, metaclass=ABCMeta):
     """A Model that can be fed plain old Python objects (e.g. a list of strings) as input.
 
     A Feedable defines a function which converts input objects into numpy arrays, which can then be passed into the
     TensorFlow computation graph.
     """
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def inputs_to_feed_dict(self, *args, **kwargs):
@@ -92,9 +90,8 @@ class Feedable(Model):
         return results
 
 
-class Optimizable(Model):
+class Optimizable(Model, metaclass=ABCMeta):
     """A Model with a differentiable objective function."""
-    __metaclass__ = ABCMeta
 
     @abstractproperty
     def objective_tensor(self):
@@ -165,9 +162,8 @@ class KerasModel(Feedable):
         pass
 
 
-class KerasObjective(KerasModel):
+class KerasObjective(KerasModel, metaclass=ABCMeta):
     """Specifies the loss functions for training a model, as well as how to assign values to label Placeholders."""
-    __metaclass__ = ABCMeta
 
     @abstractproperty
     def losses(self):

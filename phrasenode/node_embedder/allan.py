@@ -1,6 +1,6 @@
 """Richer embeddings for nodes"""
 from collections import namedtuple, defaultdict
-from itertools import izip
+
 import random
 
 import numpy as np
@@ -21,7 +21,7 @@ from phrasenode.vocab import GloveEmbeddings, RandomEmbeddings, read_frequency_v
 
 def semantic_attrs(attrs):
     whitelist = ['aria','tooltip','placeholder','label','title','name']
-    attrs = [value for key, value in attrs.items() if any(k in key.lower() for k in whitelist)]
+    attrs = [value for key, value in list(attrs.items()) if any(k in key.lower() for k in whitelist)]
     return ' '.join(attrs)
 
 

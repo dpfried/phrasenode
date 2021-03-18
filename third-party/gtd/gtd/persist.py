@@ -5,7 +5,7 @@ import os.path
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import MutableMapping, Mapping, Sequence, Iterator
 from contextlib import contextmanager
-from itertools import izip
+
 
 from sqlalchemy import MetaData
 from sqlalchemy.engine.url import URL
@@ -20,9 +20,7 @@ from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.sql import select
 
 
-class Closeable(object):
-    __metaclass__ = ABCMeta
-
+class Closeable(object, metaclass=ABCMeta):
     @abstractmethod
     def close(self):
         """Close this object."""
@@ -49,9 +47,8 @@ class Closeable(object):
             self.close()
 
 
-class BatchMapping(Mapping):
+class BatchMapping(Mapping, metaclass=ABCMeta):
     """Like the built-in Mapping class, except subclasses must implement batch versions of get and contains."""
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def get_batch(self, keys):
@@ -91,9 +88,8 @@ class BatchMapping(Mapping):
         return self.contains_batch([key])[0]
 
 
-class BatchMutableMapping(MutableMapping, BatchMapping):
+class BatchMutableMapping(MutableMapping, BatchMapping, metaclass=ABCMeta):
     """Like the built-in MutableMapping, except subclasses must implement batch versions of setitem and delitem."""
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def set_batch(self, key_val_pairs):
@@ -153,22 +149,22 @@ class CacheWrapperMixin(object):
         return len(self.cache)
 
     def iteritems(self):
-        return self.cache.iteritems()
+        return iter(self.cache.items())
 
     def iterkeys(self):
-        return self.cache.iterkeys()
+        return iter(self.cache.keys())
 
     def itervalues(self):
-        return self.cache.itervalues()
+        return iter(self.cache.values())
 
     def keys(self):
-        return self.cache.keys()
+        return list(self.cache.keys())
 
     def items(self):
-        return self.cache.items()
+        return list(self.cache.items())
 
     def values(self):
-        return self.cache.values()
+        return list(self.cache.values())
 
 
 class LazyMapping(CacheWrapperMixin, BatchMapping):
@@ -231,11 +227,11 @@ class LazyMapping(CacheWrapperMixin, BatchMapping):
                 int: the number of keys which were freshly computed
         """
         presence = self.cache.contains_batch(keys)
-        to_compute = [key for key, present in izip(keys, presence) if not present]
+        to_compute = [key for key, present in zip(keys, presence) if not present]
         computed = self.compute_batch(to_compute)
 
         updates = []
-        for key, val in izip(to_compute, computed):
+        for key, val in zip(to_compute, computed):
             if not isinstance(val, Failure):
                 updates.append((key, val))
 
@@ -340,9 +336,7 @@ def sqlalchemy_metadata(host, port, database, username, password):
     return MetaData(engine)
 
 
-class ORM(object):
-    __metaclass__ = ABCMeta
-
+class ORM(object, metaclass=ABCMeta):
     def __init__(self, columns):
         assert isinstance(columns, list)
         for c in columns:
@@ -568,7 +562,7 @@ class TableMapping(BatchMutableMapping):
         row = self._key_orm.to_row(key)
         row.update(self._val_orm.to_row(val))
         if string_cols:
-            row = {col.name: v for col, v in row.iteritems()}
+            row = {col.name: v for col, v in row.items()}
         return row
 
     def del_batch(self, keys):
@@ -592,13 +586,13 @@ class TableMapping(BatchMutableMapping):
 
     def set_batch(self, key_val_pairs):
         if len(key_val_pairs) == 0: return
-        keys, vals = zip(*key_val_pairs)
+        keys, vals = list(zip(*key_val_pairs))
 
         # make sure keys are unique
         assert len(keys) == len(set(keys))
 
         present_keys = []
-        for key, present in izip(keys, self.contains_batch(keys)):
+        for key, present in zip(keys, self.contains_batch(keys)):
             if present:
                 present_keys.append(key)
 
@@ -622,17 +616,17 @@ class TableMapping(BatchMutableMapping):
         return iter(self)
 
     def itervalues(self):
-        for _, val in self.iteritems():
+        for _, val in self.items():
             yield val
 
     def keys(self):
-        return list(self.iterkeys())
+        return list(self.keys())
 
     def items(self):
-        return list(self.iteritems())
+        return list(self.items())
 
     def values(self):
-        return list(self.itervalues())
+        return list(self.values())
 
 
 class FileMapping(MutableMapping, Closeable):
@@ -1082,9 +1076,7 @@ class ShardedSequence(AppendableSequence, Closeable):
         return itertools.chain(*self._shards)
 
 
-class BatchIterator(Iterator):
-    __metaclass__ = ABCMeta
-
+class BatchIterator(Iterator, metaclass=ABCMeta):
     def __init__(self, default_batch_size=20):
         self._default_batch_size = default_batch_size
 
@@ -1105,7 +1097,7 @@ class BatchIterator(Iterator):
         """
         pass
 
-    def next(self):
+    def __next__(self):
         try:
             return next(self._latest_batch)
         except (AttributeError, StopIteration):
@@ -1113,9 +1105,7 @@ class BatchIterator(Iterator):
             return next(self._latest_batch)
 
 
-class LazyIterator(BatchIterator):
-    __metaclass__ = ABCMeta
-
+class LazyIterator(BatchIterator, metaclass=ABCMeta):
     def __init__(self, cache, default_batch_size=100):
         """Create a CacheIterator.
 

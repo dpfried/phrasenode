@@ -1,4 +1,4 @@
-import cPickle as pickle
+import pickle as pickle
 import codecs
 import contextlib
 from contextlib import contextmanager
@@ -10,10 +10,10 @@ import shutil
 import subprocess
 import sys
 import time
-from Queue import Queue, Empty
+from queue import Queue, Empty
 from abc import ABCMeta, abstractmethod
 from collections import Mapping, OrderedDict
-from itertools import izip
+
 from os.path import join
 from threading import Thread
 
@@ -139,7 +139,7 @@ def work_in_sandbox(directory):
         shutil.rmtree(p)
     os.makedirs(p)
     os.chdir(p)
-    print os.getcwd()
+    print(os.getcwd())
 
 
 def makedirs(directory):
@@ -170,7 +170,7 @@ class EmptyFile(object):
         pass
     def __iter__(self):
         return self
-    def next(self):
+    def __next__(self):
         return ''
 
 
@@ -179,13 +179,13 @@ def read_files(*file_paths):
     for i, p in enumerate(file_paths):
         if p:
             files.append(open(p, mode="r"))
-            print 'Opened:', p
+            print('Opened:', p)
         else:
             files.append(EmptyFile())
-            print 'WARNING: no path provided for file {} in list.'.format(i)
+            print('WARNING: no path provided for file {} in list.'.format(i))
 
     with contextlib.nested(*files) as entered_files:
-        for lines in izip(*entered_files):
+        for lines in zip(*entered_files):
             yield lines
 
 
@@ -204,7 +204,7 @@ class MultiFileWriter(object):
 
     def write(self, lines):
         assert len(lines) == len(self.files)
-        for f, line in izip(self.files, lines):
+        for f, line in zip(self.files, lines):
             f.write(line)
 
 
@@ -296,7 +296,7 @@ def shell(cmd, cwd=None, verbose=False, debug=False):
         all output from the command
     """
     if verbose:
-        print cmd
+        print(cmd)
 
     if debug:
         return
@@ -323,10 +323,8 @@ def local_bash(command, capture=False):
     return local(command, capture, shell='/bin/bash')
 
 
-class JSONPicklable(object):
+class JSONPicklable(object, metaclass=ABCMeta):
     """Uses jsonpickle to convert any picklable object to and from JSON."""
-
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def __getstate__(self):

@@ -2,7 +2,7 @@ from git import Repo
 from os.path import join
 
 import sys
-print sys.path
+print(sys.path)
 
 from gtd.git_utils import commit_diff
 from gtd.chrono import verboserate

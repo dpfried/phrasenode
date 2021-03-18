@@ -30,13 +30,13 @@ def in_ipython():
 def print_with_fonts(tokens, sizes, colors, background=None):
 
     def style(text, size=12, color='black'):
-        return u'<span style="font-size: {}px; color: {};">{}</span>'.format(size, color, text)
+        return '<span style="font-size: {}px; color: {};">{}</span>'.format(size, color, text)
 
     styled = [style(token, size, color) for token, size, color in zip(tokens, sizes, colors)]
-    text = u' '.join(styled)
+    text = ' '.join(styled)
 
     if background:
-        text = u'<span style="background-color: {};">{}</span>'.format(background, text)
+        text = '<span style="background-color: {};">{}</span>'.format(background, text)
 
     display(HTML(text))
 
@@ -150,7 +150,7 @@ class SyncedMetadata(Metadata):
 
 def print_list(l):
     for item in l:
-        print item
+        print(item)
 
 
 def print_no_newline(s):
@@ -165,7 +165,7 @@ def set_log_level(level):
         level: can be an integer such as 30 (logging.WARN), or a string such as 'WARN'
     """
     if isinstance(level, str):
-        level = logging._levelNames[level]
+        level = logging.getLevelName(level)
 
     logger = logging.getLogger()  # gets root logger
     logger.setLevel(level)
@@ -255,5 +255,5 @@ class Tracer(object):
 
 
 def indent(s, spaces=4):
-    whitespace = u' ' * spaces
-    return u'\n'.join(whitespace + line for line in s.split(u'\n'))
+    whitespace = ' ' * spaces
+    return '\n'.join(whitespace + line for line in s.split('\n'))

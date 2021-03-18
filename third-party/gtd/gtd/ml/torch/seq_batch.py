@@ -1,5 +1,5 @@
 from collections import namedtuple
-from itertools import izip
+
 
 import numpy as np
 import torch
@@ -77,7 +77,7 @@ class SequenceBatch(namedtuple('SequenceBatch', ['values', 'mask']), NamedTupleL
         # build arrays
         values = np.zeros(shape, dtype=np.int64)  # pad with zeros
         mask = np.zeros(shape, dtype=np.float32)
-        for i, (seq, vocab) in enumerate(izip(sequences, vocabs)):
+        for i, (seq, vocab) in enumerate(zip(sequences, vocabs)):
             for j, word in enumerate(seq):
                 values[i, j] = vocab.word2index(word)
                 mask[i, j] = 1.0
@@ -94,7 +94,7 @@ class SequenceBatch(namedtuple('SequenceBatch', ['values', 'mask']), NamedTupleL
         """
         values_list = [v.squeeze(dim=1) for v in self.values.split(1, dim=1)]
         mask_list = self.mask.split(1, dim=1)
-        return [SequenceBatchElement(v, m) for v, m in izip(values_list, mask_list)]
+        return [SequenceBatchElement(v, m) for v, m in zip(values_list, mask_list)]
 
     @classmethod
     def cat(cls, elements):

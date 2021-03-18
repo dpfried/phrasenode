@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from collections import Sequence, Mapping
-from itertools import izip
+
 
 import numpy as np
 import pytest
@@ -32,7 +32,7 @@ def assert_array_collections_equal(correct, test, decimal=7):
 
     if isinstance(correct, Sequence):
         assert len(correct) == len(test)
-        for c, t in izip(correct, test):
+        for c, t in zip(correct, test):
             assert_equal(c, t)
     elif isinstance(correct, Mapping):
         # same keys

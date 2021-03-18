@@ -36,7 +36,7 @@ class TestTokenEmbedder(FeedableTester):
             [2, 4, 6],
             [3, 5, 7],
         ], dtype=np.float32)
-        vocab = SimpleVocab(u'a b c'.split())
+        vocab = SimpleVocab('a b c'.split())
         embeddings = SimpleEmbeddings(array, vocab)
         return TokenEmbedder(embeddings, 'token_embeds')
 
@@ -76,7 +76,7 @@ class TestSequenceEmbedder(FeedableTester):
 
     @pytest.fixture
     def inputs(self):
-        token_vocab = SimpleVocab(['<pad>'] + u'a b c d'.split())
+        token_vocab = SimpleVocab(['<pad>'] + 'a b c d'.split())
         sequences = [
             ['a', 'c'],
             ['b', 'c', 'c'],
@@ -121,7 +121,7 @@ class TestSequenceEmbedder(FeedableTester):
 
 class TestConcatSequenceEmbedder(object):
     def test(self):
-        token_vocab = SimpleVocab(u'a b c d'.split())
+        token_vocab = SimpleVocab('a b c d'.split())
         sequences = [
             ['a', 'b', 'c', 'd'],
             ['c', 'd'],
@@ -147,7 +147,7 @@ class TestConcatSequenceEmbedder(object):
 
 class TestFixedLengthConcatEmbedder(object):
     def test(self):
-        token_vocab = SimpleVocab(u'a b c d'.split())
+        token_vocab = SimpleVocab('a b c d'.split())
         sequences = [
             ['a', 'b', 'c', 'd'],
             ['c', 'd'],
@@ -319,7 +319,7 @@ class TestLSTMSequenceEmbedder(object):
 
     def test_lstm(self):
         """Test whether the mask works properly for LSTM embedder."""
-        token_vocab = SimpleVocab(u'a b c d'.split())
+        token_vocab = SimpleVocab('a b c d'.split())
         sequences = [
             ['a', 'b', 'c', 'd'],
             ['c', 'd'],
@@ -369,7 +369,7 @@ class TestBidiLSTMSequenceEmbedder(object):
 
     def test_lstm(self):
         """Test whether the mask works properly for bidi LSTM embedder."""
-        token_vocab = SimpleVocab(u'a b c d'.split())
+        token_vocab = SimpleVocab('a b c d'.split())
         sequences = [
             ['a', 'b', 'c', 'd'],
             ['c', 'd'],

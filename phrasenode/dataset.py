@@ -35,9 +35,9 @@ class PhraseNodeStorage(object):
                 raw = json.loads(line)
                 example = PhraseNodeExample(self, raw)
                 groups.setdefault(example.web_page_code, []).append(example)
-        print >> sys.stderr, 'Read {} examples ({} web pages) from {}'.format(
-                sum(len(examples) for examples in groups.itervalues()),
-                len(groups), filename)
+        print('Read {} examples ({} web pages) from {}'.format(
+                sum(len(examples) for examples in groups.values()),
+                len(groups), filename), file=sys.stderr)
         return groups
 
     def get_web_page(self, web_page_code, check=True):
@@ -76,7 +76,7 @@ class PhraseNodeExample(object):
         self._metadata = metadata
         self._example_id = metadata['exampleId']
         self._web_page_code = (metadata['version'], metadata['webpage'])
-        self._phrase = unicode(metadata['phrase']).lower().strip()
+        self._phrase = str(metadata['phrase']).lower().strip()
         self._target_xid = metadata['xid']
 
     def __repr__(self):

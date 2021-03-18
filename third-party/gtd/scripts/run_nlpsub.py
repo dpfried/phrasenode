@@ -56,12 +56,12 @@ docker_cmd = '/u/nlp/packages/anaconda2/bin/python run_docker.py -r -g {gpu} {co
 
 nlpsub_cmd = 'nlpsub {options} {command}'.format(options=' '.join(nlpsub_options), command=bash_string(docker_cmd))
 
-print 'Logging to: {}'.format(log_dir)
-print 'Allowed hosts: {}'.format(args.host)
-print 'GPU to use: {}'.format(args.gpu)
-print 'Command inside Docker: {}'.format(cmd)
-print nlpsub_cmd
-print
+print('Logging to: {}'.format(log_dir))
+print('Allowed hosts: {}'.format(args.host))
+print('GPU to use: {}'.format(args.gpu))
+print('Command inside Docker: {}'.format(cmd))
+print(nlpsub_cmd)
+print()
 
 if not args.debug:
     subprocess.call(nlpsub_cmd, shell=True)

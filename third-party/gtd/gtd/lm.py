@@ -21,17 +21,16 @@ def replace_parens(tokens):
 def normalize_counts(counts):
     """Return a normalized Counter object."""
     normed = Counter()
-    total = sum(counts.values(), 0.0)
+    total = sum(list(counts.values()), 0.0)
     assert total > 0  # cannot normalize empty Counter
-    for key, ct in counts.iteritems():
+    for key, ct in counts.items():
         normed[key] = ct / total
     normed.old_total = total  # document what the total was before normalization
     return normed
 
 
-class LM(object):
+class LM(object, metaclass=ABCMeta):
     """Language model interface."""
-    __metaclass__ = ABCMeta
 
     START = '<START>'
     END = '<END>'
@@ -188,9 +187,8 @@ class KNNLM(LM):
         return self.lm.sequence_probability(tokens)
 
 
-class Generator(object):
+class Generator(object, metaclass=ABCMeta):
     """Interface for language generator."""
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def init_history(self):
@@ -270,7 +268,7 @@ class LMSampler(Generator):
         Returns:
             one of the keys of distr
         """
-        keys, probs = zip(*distr.items())
+        keys, probs = list(zip(*list(distr.items())))
         assert_approx_equal(sum(probs), 1.)
         return np.random.choice(keys, p=probs)
 
@@ -293,7 +291,7 @@ class DistributionStats(object):
         self.total = distr.old_total
         self.context = distr.context
 
-        probs = distr.values()
+        probs = list(distr.values())
         assert_approx_equal(sum(probs), 1.)
         self.entropy = -1. * sum([p * np.log(p) for p in probs])
 
@@ -306,7 +304,7 @@ class LMSamplerWithStats(LMSampler):
         return [(LM.START, 0)]
 
     def get_next(self, history):
-        token_history, _ = zip(*history)
+        token_history, _ = list(zip(*history))
         distr = self.lm.next_distribution(token_history)
         next_token = self._sample_from_distribution(distr)
         return next_token, DistributionStats(distr)
@@ -317,7 +315,7 @@ class LMSamplerWithStats(LMSampler):
 
     @staticmethod
     def format_generation(token_stat_pairs):
-        tokens, stats = zip(*list(token_stat_pairs))
+        tokens, stats = list(zip(*list(token_stat_pairs)))
         tokens = replace_parens(tokens)
         tokens = ['{:20}[{}]'.format(tok, stat) for tok, stat in zip(tokens, stats)]
 

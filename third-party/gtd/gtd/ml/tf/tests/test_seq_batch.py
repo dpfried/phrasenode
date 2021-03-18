@@ -53,14 +53,14 @@ class TestFeedSequenceBatch(FeedableTester):
 
     @pytest.fixture
     def inputs(self):
-        tokens = u'<unk> a b c'.split()
+        tokens = '<unk> a b c'.split()
         unk = '<unk>'
         vocab = VocabExample(tokens, unk)
         sequences = [
-            u'a a b b c'.split(),
-            u'a b'.split(),
-            [u'b'],
-            [u'c'],
+            'a a b b c'.split(),
+            'a b'.split(),
+            ['b'],
+            ['c'],
         ]
         return self.as_args_kwargs(sequences, vocab)
 
@@ -109,14 +109,14 @@ class TestFeedSequenceBatch(FeedableTester):
             assert_array_collections_equal(correct, test)
 
     def test_seq_length(self):
-        tokens = u'<unk> a b c'.split()
+        tokens = '<unk> a b c'.split()
         unk = '<unk>'
         vocab = VocabExample(tokens, unk)
         sequences = [
-            u'a b a b c'.split(),  # more than length 4
-            u'a b'.split(),
-            [u'b'],
-            [u'c'],
+            'a b a b c'.split(),  # more than length 4
+            'a b'.split(),
+            ['b'],
+            ['c'],
         ]
 
         indices = np.array([
@@ -145,7 +145,7 @@ class TestFeedSequenceBatch(FeedableTester):
             assert mask.get_shape().as_list() == [None, 4]
 
     def test_no_sequences(self):
-        vocab = SimpleVocab(u'a b c'.split())
+        vocab = SimpleVocab('a b c'.split())
         sequences = []
 
         with clean_session():

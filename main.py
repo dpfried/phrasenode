@@ -66,11 +66,11 @@ run.workspace.add_file('stdout', 'stdout.txt')
 run.workspace.add_file('stderr', 'stderr.txt')
 run.workspace.add_file('command', 'command.txt')
 with open(run.workspace.command, 'a') as fout:
-    print >> fout, sys.argv
+    print(sys.argv, file=fout)
 if args.comment:
     run.workspace.add_file('comment', 'comment.txt')
     with open(run.workspace.comment, 'a') as fout:
-        print >> fout, args.comment
+        print(args.comment, file=fout)
 
 
 if args.profile:

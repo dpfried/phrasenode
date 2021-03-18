@@ -5,7 +5,7 @@ import requests
 import sys
 import time
 import traceback
-import urlparse
+import urllib.parse
 
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException

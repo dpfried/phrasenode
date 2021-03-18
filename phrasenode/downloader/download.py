@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import sys, os, shutil, re, argparse, json, gzip
-import time, urllib, logging, traceback
+import time, urllib.request, urllib.parse, urllib.error, logging, traceback
 from codecs import open
-from itertools import izip
+
 from collections import defaultdict, Counter
 
 from phrasenode.downloader.instance import DownloaderInstance
@@ -23,22 +23,22 @@ def download(storage_path, instance, storage, index, args):
     url = storage_path.url
     if (os.path.exists(storage.error_path(storage_path))
             or os.path.exists(storage.info_path(storage_path))):
-        print u'[{}] Already downloaded {}'.format(index, url)
+        print('[{}] Already downloaded {}'.format(index, url))
         return
-    print u'[{}] Openning {}'.format(index, url)
+    print('[{}] Openning {}'.format(index, url))
     if args.auto_resize:
         instance.resize_window()    # Reset window size
     if not instance.visit(url):
         raise RuntimeError('Timeout')
-    print 'Page opened.'
+    print('Page opened.')
     time.sleep(args.sleep)
     if args.manual:
-        reply = (raw_input('Is the page OK? (Y/n): ').lower()[:1] != 'n')
+        reply = (input('Is the page OK? (Y/n): ').lower()[:1] != 'n')
         if not reply:
             raise RuntimeError('Not OK')
     dimensions = instance.dimensions()
     if args.auto_resize and dimensions['scrollHeight'] > instance.WINDOW_HEIGHT:
-        print 'Increasing window height to {}'.format(dimensions['scrollHeight'])
+        print('Increasing window height to {}'.format(dimensions['scrollHeight']))
         instance.resize_window(height=dimensions['scrollHeight'])
         time.sleep(args.sleep)  # Wait for infinite scroll stuff
     dom_info = instance.get_dom_info()
@@ -91,7 +91,7 @@ def main():
     args = parser.parse_args()
 
     if not os.path.isdir(args.outdir):
-        print 'Creating directory {}'.format(args.outdir)
+        print('Creating directory {}'.format(args.outdir))
         os.makedirs(args.outdir)
     storage = WebPageStorage(args.outdir,
             url_path_only=bool(args.localhost_port))
@@ -104,7 +104,7 @@ def main():
     with open(args.infile) as fin:
         for index, line in enumerate(fin):
             if index >= args.limit:
-                print 'Limit reached.'
+                print('Limit reached.')
                 break
             if index < args.start_index:
                 continue
@@ -120,10 +120,10 @@ def main():
             try:
                 download(storage_path, instance, storage, index, args)
             except Exception as e:
-                print 'Something bad happened.'
+                print('Something bad happened.')
                 traceback.print_exc()
                 with open(storage.error_path(storage_path), 'w', 'utf8') as fout:
-                    print >> fout, 'ERROR', repr(e)
+                    print('ERROR', repr(e), file=fout)
                     traceback.print_exc(file=fout)
                 instance.reset()
 

@@ -35,7 +35,7 @@ class Node(object):
         self.width = raw_info['width']
         self.height = raw_info['height']
         if 'text' in raw_info:
-            self.text = unicode(raw_info['text'])
+            self.text = str(raw_info['text'])
         else:
             self.text = None
         self.value = raw_info.get('value')
@@ -314,10 +314,10 @@ class WebPage(object):
                 masks[i][j] indicates if the neighbor #j of node i is present
         """
         G = self.graph
-        neighbors = [[0] * len(self.SPATIAL_RELATIONS) for _ in xrange(len(self.nodes))]
-        masks = [[0] * len(self.SPATIAL_RELATIONS) for _ in xrange(len(self.nodes))]
-        for src, tgts in G.nodes.iteritems():
-            for tgt, rels in tgts.iteritems():
+        neighbors = [[0] * len(self.SPATIAL_RELATIONS) for _ in range(len(self.nodes))]
+        masks = [[0] * len(self.SPATIAL_RELATIONS) for _ in range(len(self.nodes))]
+        for src, tgts in G.nodes.items():
+            for tgt, rels in tgts.items():
                 for rel in rels:
                     if rel not in self.SPATIAL_RELATIONS:
                         continue
@@ -399,7 +399,7 @@ class GraphCreator(object):
             visual_on_leaf_only (bool): Whether to only compute visual edges
                 on the leaf nodes
         """
-        if isinstance(web_page, basestring):
+        if isinstance(web_page, str):
             from phrasenode.webpage import WebPage
             web_page = WebPage(web_page)
         self.web_page = web_page
@@ -421,7 +421,7 @@ class GraphCreator(object):
             self.G.add_edge(node.ref, child.ref, GraphRels.CHILD)
             self.G.add_edge(child.ref, node.ref, GraphRels.PARENT)
             self._create_logical_edges(child)
-        for i in xrange(len(non_t) - 1):
+        for i in range(len(non_t) - 1):
             self.G.add_edge(non_t[i].ref, non_t[i+1].ref, GraphRels.NSIB)
             self.G.add_edge(non_t[i+1].ref, non_t[i].ref, GraphRels.PSIB)
 

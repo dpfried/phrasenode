@@ -22,10 +22,10 @@ from pyhocon import ConfigTree, HOCONConverter, ConfigFactory
 
 
 def sorted_by_value(d, ascending=True):
-    return OrderedDict(sorted(d.items(), key=operator.itemgetter(1), reverse=not ascending))
+    return OrderedDict(sorted(list(d.items()), key=operator.itemgetter(1), reverse=not ascending))
 
 
-class FunctionWrapper(object):
+class FunctionWrapper(object, metaclass=ABCMeta):
     """Turn a function or method into a callable object.
 
     Can be used as a decorator above method definitions, e.g.
@@ -40,7 +40,6 @@ class FunctionWrapper(object):
         obj = Something()
         obj.some_method = FunctionWrapper(obj.some_method)
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self, fxn):
         self._orig_fxn = fxn
@@ -66,9 +65,7 @@ class FunctionWrapper(object):
         raise NotImplementedError
 
 
-class Memoized(FunctionWrapper):
-    __metaclass__ = ABCMeta
-
+class Memoized(FunctionWrapper, metaclass=ABCMeta):
     def __init__(self, fxn):
         """Create memoized version of a function.
 
@@ -166,7 +163,7 @@ def memoize_with_key_fxn(key_fxn):
 
 def args_as_string(args, kwargs):
     args_str = '_'.join([str(a) for a in args])
-    kwargs_str = '_'.join(['{}={}'.format(k, v) for k, v in kwargs.iteritems()])
+    kwargs_str = '_'.join(['{}={}'.format(k, v) for k, v in kwargs.items()])
     items = [args_str, kwargs_str]
     items = [s for s in items if s]  # remove empty elements
     key_str = '_'.join(items)
@@ -233,14 +230,14 @@ def chunks(l, n):
     """
     Return a generator of lists, each of size n (the last list may be less than n)
     """
-    for i in xrange(0, len(l), n):
+    for i in range(0, len(l), n):
         yield l[i:i + n]
 
 
 def ensure_unicode(s):
-    assert isinstance(s, basestring)
-    if not isinstance(s, unicode):
-        s = unicode(s, 'utf-8')
+    assert isinstance(s, str)
+    if not isinstance(s, str):
+        s = str(s, 'utf-8')
     return s
 
 
@@ -254,7 +251,7 @@ class UnicodeMixin(object):
         return repr(self)
 
     def __repr__(self):
-        return unicode(self).encode('utf-8')
+        return str(self).encode('utf-8')
 
 
 class EqualityMixinSlots(object):
@@ -329,7 +326,7 @@ def data_split(items, dev_part=0.1, test_part=0.1):
     assert len(train_set.intersection(dev_set)) == 0
     assert len(train_set.intersection(test_set)) == 0
 
-    print 'train {}, dev {}, test {}'.format(len(train), len(dev), len(test))
+    print('train {}, dev {}, test {}'.format(len(train), len(dev), len(test)))
     return train, dev, test
 
 
@@ -353,7 +350,7 @@ class Bunch(object):
 def best_threshold(scores, labels, debug=False):
     # find best threshold in O(nlogn)
     # does not handle scores of infinity or -infinity
-    items = zip(scores, labels)
+    items = list(zip(scores, labels))
     items.sort()
     total = len(items)
     total_pos = len([l for l in labels if l])
@@ -378,7 +375,7 @@ def best_threshold(scores, labels, debug=False):
     if debug:
         import matplotlib.pyplot as plt
         from gtd.plot import plot_pdf
-        x, y = zip(*thresh_accs)
+        x, y = list(zip(*thresh_accs))
         plt.figure()
         plt.plot(x, y)
         pos_scores = [s for s, l in items if l]
@@ -416,7 +413,7 @@ def get_batch(data, batch_size, k):
         batch_size: the size of the returned batch
         k: the batch index you want to get.
     """
-    return [data[i % len(data)] for i in xrange(k * batch_size, (k + 1) * batch_size)]
+    return [data[i % len(data)] for i in range(k * batch_size, (k + 1) * batch_size)]
 
 
 # TODO: test
@@ -476,7 +473,7 @@ class HomogeneousBatchSampler(object):
         for d in data:
             buckets[bucket_fxn(d)].append(d)
 
-        keys = buckets.keys()
+        keys = list(buckets.keys())
         freqs = np.array([len(buckets[k]) for k in keys], dtype=float)
         probs = freqs / np.sum(freqs)
 
@@ -560,7 +557,7 @@ class NestedDict(MutableMapping):
             d = {}
 
         self.d = {}
-        for keys, val in self._flatten(d).iteritems():
+        for keys, val in self._flatten(d).items():
             self.set_nested(keys, val)
 
     def __iter__(self):
@@ -576,7 +573,7 @@ class NestedDict(MutableMapping):
     def __len__(self):
         """Total number of leaf nodes."""
         l = 0
-        for v in self.itervalues():
+        for v in self.values():
             if isinstance(v, NestedDict):
                 l += len(v)
             else:
@@ -616,7 +613,7 @@ class NestedDict(MutableMapping):
 
     def as_dict(self):
         d = {}
-        for key, sub in self.iteritems():
+        for key, sub in self.items():
             if isinstance(sub, NestedDict):
                 val = sub.as_dict()
             else:
@@ -632,7 +629,7 @@ class NestedDict(MutableMapping):
             if not isinstance(d, Mapping):  # leaf node
                 flattened[key_tuple] = d
                 return
-            for key, val in d.iteritems():
+            for key, val in d.items():
                 helper(key_tuple + (key,), val)
 
         helper(tuple(), d)
@@ -642,7 +639,7 @@ class NestedDict(MutableMapping):
         return self._flatten(self)
 
     def leaves(self):
-        return self.flattened().values()
+        return list(self.flattened().values())
 
 
 def ranks(scores, ascending=True):
@@ -1031,8 +1028,7 @@ def bleu(reference, predict):
     return bleu_score.sentence_bleu([reference], predict, weights, emulate_multibleu=True)
 
 
-class ComparableMixin(object):
-    __metaclass__ = ABCMeta
+class ComparableMixin(object, metaclass=ABCMeta):
     __slots__ = []
 
     @abstractproperty
@@ -1092,7 +1088,7 @@ def parallel_call(fxn, vals):
             executor.submit(val, val)
         for val, result in gtd.chrono.verboserate(executor.results(), desc='Processing values', total=len(vals)):
             if isinstance(result, Failure):
-                print result.traceback
+                print(result.traceback)
             else:
                 results.append(result)
     return results
@@ -1114,7 +1110,7 @@ class ClassCounter(object):
         stats.annotate_snapshot(snap)
 
         # get target class
-        classes = snap.classes.keys()
+        classes = list(snap.classes.keys())
 
         if len(classes) == 0:
             return 0  # no instances of the class seen yet

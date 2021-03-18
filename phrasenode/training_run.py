@@ -81,18 +81,18 @@ class PhraseNodeTrainingRun(TorchTrainingRun):
         self.gradient_clip = config.train.gradient_clip
 
     def load_model(self, train_steps):
-        print 'Loading from checkpoint {}'.format(train_steps)
+        print('Loading from checkpoint {}'.format(train_steps))
         self.train_state = self.checkpoints.load(
                 train_steps, self.model, self.optimizer)
 
     def load_latest_model(self):
-        print 'Loading the latest checkpoint'
+        print('Loading the latest checkpoint')
         self.train_state = self.checkpoints.load_latest(
                 self.model, self.optimizer)
 
     def save_model(self):
         """Save the current model to a checkpoint."""
-        print 'Saving model to {}.checkpoint'.format(self.train_state.train_steps)
+        print('Saving model to {}.checkpoint'.format(self.train_state.train_steps))
         self.checkpoints.save(self.train_state)
 
     def prune_old_models(self):
@@ -101,7 +101,7 @@ class PhraseNodeTrainingRun(TorchTrainingRun):
         checkpoint_numbers = self.checkpoints.checkpoint_numbers
         to_keep = (set(checkpoint_numbers[-clc.keep_last:]) |
                 set(x for x in checkpoint_numbers if x % clc.keep_every == 0))
-        print 'Keeping checkpoints {}'.format(sorted(to_keep))
+        print('Keeping checkpoints {}'.format(sorted(to_keep)))
         to_prune = [x for x in checkpoint_numbers if x not in to_keep]
         for x in to_prune:
             self.checkpoints.delete(x)
@@ -119,19 +119,19 @@ class PhraseNodeTrainingRun(TorchTrainingRun):
         # Training loop
         min_step = self.train_state.train_steps + 1
         max_step = config.timing.max_control_steps
-        for step in tqdm(xrange(min_step, max_step + 1), desc='Training'):
+        for step in tqdm(range(min_step, max_step + 1), desc='Training'):
             self.train_state.increment_train_steps()
             assert step == self.train_state.train_steps
 
             # Grab a web page from the training dataset
             try:
-                web_page_code, examples = train_iterator.next()
+                web_page_code, examples = next(train_iterator)
             except StopIteration:
                 train_iterator = iter(self._get_data_group_list(self.train_data, shuffle=True))
                 self.logfile.close()
                 self.logfile = gzip.open(
-                        join(self.workspace.logs, 'eval-pn-train.{}.gz'.format(step)), 'w')
-                web_page_code, examples = train_iterator.next()
+                        join(self.workspace.logs, 'eval-pn-train.{}.gz'.format(step)), 'wt')
+                web_page_code, examples = next(train_iterator)
 
             # Train
             ex_stats = self._process_examples(
@@ -152,7 +152,7 @@ class PhraseNodeTrainingRun(TorchTrainingRun):
             # Evaluate
             if step % config.timing.dev_freq == 0:
                 filename = join(self.workspace.logs, 'eval-pn-dev.{}.gz'.format(step))
-                with gzip.open(filename, 'w') as dev_logfile:
+                with gzip.open(filename, 'wt') as dev_logfile:
                     dev_stats = Stats()
                     for web_page_code, examples in tqdm(
                             self._get_data_group_list(self.dev_data),
@@ -160,12 +160,12 @@ class PhraseNodeTrainingRun(TorchTrainingRun):
                         ex_stats = self._process_examples(
                                 web_page_code, examples, train=False, logfile=dev_logfile)
                         dev_stats.add(ex_stats)
-                    print 'DEV @ {}: {}'.format(step, dev_stats)
+                    print('DEV @ {}: {}'.format(step, dev_stats))
                     dev_stats.log(self.tb_logger, step, 'pn_dev_', ignore_grad_norm=True)
 
             if step % config.timing.test_freq == 0:
                 filename = join(self.workspace.logs, 'eval-pn-test.{}.gz'.format(step))
-                with gzip.open(filename, 'w') as test_logfile:
+                with gzip.open(filename, 'wt') as test_logfile:
                     test_stats = Stats()
                     for web_page_code, examples in tqdm(
                             self._get_data_group_list(self.test_data),
@@ -173,7 +173,7 @@ class PhraseNodeTrainingRun(TorchTrainingRun):
                         ex_stats = self._process_examples(
                                 web_page_code, examples, train=False, logfile=test_logfile)
                         test_stats.add(ex_stats)
-                    print 'TEST @ {}: {}'.format(step, test_stats)
+                    print('TEST @ {}: {}'.format(step, test_stats))
                     test_stats.log(self.tb_logger, step, 'pn_test_', ignore_grad_norm=True)
 
     def _get_data_group_list(self, data_dict, shuffle=False):
@@ -181,7 +181,7 @@ class PhraseNodeTrainingRun(TorchTrainingRun):
         - web_page_code is tuple(str, str)
         - examples is list[PhraseNodeExample]
         """
-        groups = data_dict.items()
+        groups = list(data_dict.items())
         if shuffle:
             random.shuffle(groups)
         else:
@@ -259,7 +259,7 @@ class PhraseNodeTrainingRun(TorchTrainingRun):
                         'prec': prec, 'rec': rec, 'f1': f1,
                         'str_acc': str_acc,
                         })
-                print >> logfile, json.dumps(metadata)
+                print(json.dumps(metadata), file=logfile)
         # gradient
         if train and averaged_loss.requires_grad:
             averaged_loss.backward()

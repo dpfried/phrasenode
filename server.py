@@ -74,7 +74,7 @@ else:
 def eval():
     q = request.forms
     phrase = q.query
-    print('[{}] Received {}'.format(datetime.datetime.now().time(), phrase))
+    print(('[{}] Received {}'.format(datetime.datetime.now().time(), phrase)))
     info = json.loads(q.info)
     info = json.dumps(info, ensure_ascii=True)
     answer = eval_run.eval(phrase, info)
@@ -83,7 +83,7 @@ def eval():
 
 def start_server(port):
     # This will open a global port!
-    print('[{}] Starting server'.format(datetime.datetime.now().time()))
+    print(('[{}] Starting server'.format(datetime.datetime.now().time())))
     run(host='0.0.0.0', port=port)
     print('\nGood bye!')
 

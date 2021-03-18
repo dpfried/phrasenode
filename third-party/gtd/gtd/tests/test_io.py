@@ -16,7 +16,7 @@ class TestIntegerDirectories(object):
         return IntegerDirectories(str(tmpdir))
 
     def test_keys(self, int_dirs):
-        assert int_dirs.keys() == [-1, 1, 152, 153]
+        assert list(int_dirs.keys()) == [-1, 1, 152, 153]
         assert len(int_dirs) == 4
 
     def test_largest_int(self, int_dirs):

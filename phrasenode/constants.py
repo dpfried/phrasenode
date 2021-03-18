@@ -1,7 +1,7 @@
-UNK = u'<unk>'
-BOS = u'<bos>'
-EOS = u'<eos>'
-HIDDEN = u'<hidden>'
+UNK = '<unk>'
+BOS = '<bos>'
+EOS = '<eos>'
+HIDDEN = '<hidden>'
 
 TAGS = [
     't',    # pseudo-tag for text nodes

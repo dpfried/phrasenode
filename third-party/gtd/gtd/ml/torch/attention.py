@@ -313,10 +313,10 @@ class SoftCopyAttentionTrace(object):
             self._boost_elements.append(elem)
 
     def __repr__(self):
-        format_str = u'{weight:.2f} = [exp({orig_logit:.2f}) + {boost:.2f}]/Z {elem} <-> {boost_elem}'
+        format_str = '{weight:.2f} = [exp({orig_logit:.2f}) + {boost:.2f}]/Z {elem} <-> {boost_elem}'
 
-        combined = zip(self._memory_elements, self._weights, self._orig_logits,
-                       self._boost, self._boost_elements)
+        combined = list(zip(self._memory_elements, self._weights, self._orig_logits,
+                       self._boost, self._boost_elements))
 
         # sort by descending weight
         combined = sorted(combined, key=lambda x: x[1], reverse=True)
@@ -328,7 +328,7 @@ class SoftCopyAttentionTrace(object):
                 elem=elem, boost_elem=boost_elem)
             lines.append(line)
 
-        return u'\n'.join(lines)
+        return '\n'.join(lines)
 
     def to_json_dict(self):
         return {}  # TODO(kelvin): implement

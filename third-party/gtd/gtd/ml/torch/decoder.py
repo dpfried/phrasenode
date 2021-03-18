@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple, defaultdict
-from itertools import izip
+
 
 import numpy as np
 import torch
@@ -37,9 +37,8 @@ class TrainDecoderInput(object):
         self.target_words = SequenceBatch.from_sequences(target_words_shifted, word_vocab)
 
 
-class RNNContextCombiner(object):
+class RNNContextCombiner(object, metaclass=ABCMeta):
     """Combine a local input and a global input into a single RNNInput."""
-    __metaclass__ = ABCMeta
 
     def __call__(self, global_input, local_input):
         """
@@ -90,7 +89,7 @@ class TrainDecoder(Module):
 
         loss_list = []
         rnn_states = []
-        for t, (x, target_word) in enumerate(izip(input_embed_list, target_word_list)):
+        for t, (x, target_word) in enumerate(zip(input_embed_list, target_word_list)):
             # x is a (batch_size, word_dim) SequenceBatchElement, target_word is a (batch_size,) Variable
 
             # update rnn state
@@ -123,9 +122,7 @@ class TrainDecoder(Module):
         return total_loss
 
 
-class TestDecoder(object):
-    __metaclass__ = ABCMeta
-
+class TestDecoder(object, metaclass=ABCMeta):
     @abstractmethod
     def decode(self, examples, encoder_output):
         raise NotImplementedError
@@ -219,17 +216,17 @@ class DecoderState(UnicodeMixin):
         return not self.__eq__(other)
 
     def __unicode__(self):
-        return u'({:.2f}) {}'.format(self.sequence_prob, u' '.join(self.token_sequence))
+        return '({:.2f}) {}'.format(self.sequence_prob, ' '.join(self.token_sequence))
 
 
 class Candidate(namedtuple('Candidate', ['token', 'prob'])):
     __slots__ = ()
 
     def __unicode__(self):
-        return u'{} [{:.2f}]'.format(self.token, self.prob)
+        return '{} [{:.2f}]'.format(self.token, self.prob)
 
     def __repr__(self):
-        return unicode(self).encode('utf-8')
+        return str(self).encode('utf-8')
 
 
 class PredictionTrace(UnicodeMixin):
@@ -250,17 +247,17 @@ class PredictionTrace(UnicodeMixin):
         return self.candidates[0]
 
     def __unicode__(self):
-        c_str = u' '.join(unicode(c) for c in self.candidates)
-        attn_str = u'\n'.join(unicode(attn) for attn in self.attention_traces)
-        return u'{}\n{}'.format(c_str, attn_str)
+        c_str = ' '.join(str(c) for c in self.candidates)
+        attn_str = '\n'.join(str(attn) for attn in self.attention_traces)
+        return '{}\n{}'.format(c_str, attn_str)
 
 
 class BeamCandidate(namedtuple('BeamCandidate', ['sequence', 'prob'])):
     def __unicode__(self):
-        return u'({:.2f}) {}'.format(self.prob, u' '.join(self.sequence))
+        return '({:.2f}) {}'.format(self.prob, ' '.join(self.sequence))
 
     def __repr__(self):
-        return unicode(self).encode('utf-8')
+        return str(self).encode('utf-8')
 
 
 class BeamDecoderTrace(UnicodeMixin):
@@ -268,7 +265,7 @@ class BeamDecoderTrace(UnicodeMixin):
         self.beam_traces = beam_traces
 
     def __unicode__(self):
-        return u'\n\n'.join(unicode(trace) for trace in self.beam_traces)
+        return '\n\n'.join(str(trace) for trace in self.beam_traces)
 
 
 class BeamTrace(UnicodeMixin):
@@ -279,7 +276,7 @@ class BeamTrace(UnicodeMixin):
         self.candidates = candidates
 
     def __unicode__(self):
-        return u'\n'.join(unicode(c) for c in self.candidates)
+        return '\n'.join(str(c) for c in self.candidates)
 
 
 class LeftRightDecoder(TestDecoder):
@@ -461,7 +458,7 @@ class SampleDecoder(LeftRightDecoder):
 
         # update states
         new_states = []
-        for batch_idx, (state, hint) in enumerate(izip(states, hints_at_t)):
+        for batch_idx, (state, hint) in enumerate(zip(states, hints_at_t)):
             if state.terminated:
                 new_state = state
             else:
@@ -536,7 +533,7 @@ class BeamDecoder(LeftRightDecoder):
             states.extend(doomed)
 
         # perform iterations of beam search
-        time_steps = range(max_seq_length)
+        time_steps = list(range(max_seq_length))
         if verbose:
             time_steps = verboserate(time_steps, desc='Beam decoding sequences')
 
@@ -663,7 +660,7 @@ class BeamDecoder(LeftRightDecoder):
         # note that here we store the original, UN-MODIFIED extension_probs
         # these are actual generation probabilities
         new_states = []
-        for batch_idx, token_idx in izip(batch_indices, token_indices):
+        for batch_idx, token_idx in zip(batch_indices, token_indices):
             state = states[batch_idx]
             if state.terminated:
                 new_state = state
@@ -716,9 +713,7 @@ class BeamDuplicator(object):
         return type(obj)(*[self(item) for item in obj])
 
 
-class ExtensionProbsModifier(object):
-    __metaclass__ = ABCMeta
-
+class ExtensionProbsModifier(object, metaclass=ABCMeta):
     @abstractmethod
     def modify(self, extension_probs, rnn_state, states):
         """Modify extension probs at each step of beam search.

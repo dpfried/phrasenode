@@ -48,20 +48,20 @@ class TrainingRunViewer(object):
             select (Callable[str, bool]): given a path to a run, returns True if we want to display the
                 run, False otherwise.
         """
-        field_names = self._renderers.keys()
+        field_names = list(self._renderers.keys())
         table = PrettyTable(field_names=field_names)
         types = OrderedDict((n, set()) for n in field_names)
 
-        for i, path in verboserate(self._runs._int_dirs.items(), desc='Scanning runs.'):
+        for i, path in verboserate(list(self._runs._int_dirs.items()), desc='Scanning runs.'):
             if not select(path):
                 continue
 
             row = []
-            for render in self._renderers.values():
+            for render in list(self._renderers.values()):
                 try:
                     s = render(path)
                 except:
-                    s = u''
+                    s = ''
                 row.append(s)
 
             # record types
@@ -74,7 +74,7 @@ class TrainingRunViewer(object):
 
         # display types for each attribute
         type_table = PrettyTable(['attribute', 'types'])
-        for name, type_set in types.iteritems():
+        for name, type_set in types.items():
             type_table.add_row([name, ', '.join(t.__name__ for t in type_set)])
         self._print_table(type_table)
 
@@ -84,12 +84,10 @@ class TrainingRunViewer(object):
             jupyter_no_margins()
             display(HTML(table.get_html_string()))
         else:
-            print table
+            print(table)
 
 
-class Renderer(object):
-    __metaclass__ = ABCMeta
-
+class Renderer(object, metaclass=ABCMeta):
     @abstractmethod
     def __call__(self, path):
         """Render.

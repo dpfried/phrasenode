@@ -1,6 +1,6 @@
 """Embed nodes using information propagation"""
 from collections import namedtuple, defaultdict
-from itertools import izip
+
 import random
 
 import numpy as np
@@ -170,7 +170,7 @@ class ProppyEmbedder(nn.Module):
         batch_size = embeds.shape[0]
         if mask is not None:
             embeds = embeds.mul(mask.unsqueeze(1))
-        for itr in xrange(self._iterations):
+        for itr in range(self._iterations):
             neighbors, rels = self._get_neighbors(nodes[0].web_page)
             embeds = self._aggregator(embeds, neighbors, rels)
         return embeds
@@ -188,16 +188,16 @@ class ProppyEmbedder(nn.Module):
                 containing the relation indices
         """
         G = web_page.graph
-        batch_neighbors = [[] for _ in xrange(len(web_page.nodes))]
-        batch_rels = [[] for _ in xrange(len(web_page.nodes))]
-        for src, tgts in G.nodes.iteritems():
+        batch_neighbors = [[] for _ in range(len(web_page.nodes))]
+        batch_rels = [[] for _ in range(len(web_page.nodes))]
+        for src, tgts in G.nodes.items():
             # Group by relation
             rel_to_tgts = defaultdict(list)
-            for tgt, rels in tgts.iteritems():
+            for tgt, rels in tgts.items():
                 for rel in rels:
                     rel_to_tgts[rel].append(tgt)
             # Sample if needed
-            for rel, index in self._neighbor_rels.iteritems():
+            for rel, index in self._neighbor_rels.items():
                 tgts = rel_to_tgts[rel]
                 random.shuffle(tgts)
                 if not tgts:
@@ -209,7 +209,7 @@ class ProppyEmbedder(nn.Module):
         # Create SequenceBatches
         max_len = max(len(x) for x in batch_neighbors)
         batch_mask = []
-        for neighbors, rels in izip(batch_neighbors, batch_rels):
+        for neighbors, rels in zip(batch_neighbors, batch_rels):
             assert len(neighbors) == len(rels)
             this_len = len(neighbors)
             batch_mask.append([1.] * this_len + [0.] * (max_len - this_len))

@@ -31,7 +31,7 @@ class VocabWithUnk(SimpleVocab):
         Args:
             tokens (list[basestring]): Must begin with UNK and EOS
         """
-        tokens = [unicode(t.lower()) for t in tokens]
+        tokens = [str(t.lower()) for t in tokens]
         if tokens[0] != UNK:
             raise ValueError('UNK must be the first element of the tokens list')
         if tokens[1] != EOS:
@@ -97,7 +97,7 @@ class VocabWithHashTrick(SimpleVocab):
             tokens (list[basestring]): Must begin with UNK and EOS
         """
         self.output_dim = output_dim
-        tokens = [unicode(t.lower()) for t in tokens]
+        tokens = [str(t.lower()) for t in tokens]
         if tokens[0] != UNK:
             raise ValueError('UNK must be the first element of the tokens list')
         if tokens[1] != EOS:
@@ -130,7 +130,7 @@ def read_word_vectors(dirname, vocab_size, dim, special_tokens=[UNK]):
     """
     filename_prefix = os.path.join(dirname, 'glove.6B.{}d.txt'.format(dim))
     logging.info('Loading word vectors from %s', filename_prefix)
-    words = [unicode(x) for x in special_tokens]
+    words = [str(x) for x in special_tokens]
     with open(filename_prefix + '-vocab.txt', 'r', 'utf8') as fin:
         for line in fin:
             words.append(line.strip())

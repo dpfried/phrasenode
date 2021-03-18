@@ -59,9 +59,7 @@ class DecoderCellOutput(namedtuple('DecoderCellOutput', ['rnn_state', 'vocab', '
         return PredictionBatch(self.vocab_probs.data.cpu().numpy(), self.vocab)
 
 
-class DecoderCell(Module):
-    __metaclass__ = ABCMeta
-
+class DecoderCell(Module, metaclass=ABCMeta):
     @abstractproperty
     def rnn_state_type(self):
         pass

@@ -16,7 +16,7 @@ Output format: Copy of the dataset but with the following additional attributes:
 
 import sys, os, shutil, re, argparse, json
 from codecs import open
-from itertools import izip
+
 from collections import defaultdict, Counter
 
 from tqdm import tqdm
@@ -44,8 +44,8 @@ def main():
             assert 'exampleId' in line
             assert 'predictions' in line
             inputs[line['exampleId']] = line['predictions']
-    print >> sys.stderr, 'Read {} input lines from {}'.format(
-            len(inputs), args.infile)
+    print('Read {} input lines from {}'.format(
+            len(inputs), args.infile), file=sys.stderr)
 
     # Read good-xids
     if args.good_xids:
@@ -54,14 +54,14 @@ def main():
             for line in fin:
                 line = json.loads(line)
                 good_xids[line['version'], line['webpage']] = line['xids']
-        print >> sys.stderr, 'Read {} good xids entries'.format(
-                len(good_xids))
+        print('Read {} good xids entries'.format(
+                len(good_xids)), file=sys.stderr)
 
     storage = PhraseNodeStorage(data.workspace.phrase_node)
     all_examples = storage.load_examples(args.set_name)
     stats = Stats()
 
-    for web_page_code, examples in tqdm(all_examples.items()):
+    for web_page_code, examples in tqdm(list(all_examples.items())):
         web_page = storage.get_web_page(web_page_code, check=False)
         for example in examples:
             stats.n += 1
@@ -90,9 +90,9 @@ def main():
                     stats.accuracy += prediction['match']
                     stats.area_f1 += prediction['f1']
                     read_top_prediction = True
-            print json.dumps(answer)
+            print(json.dumps(answer))
 
-    print >> sys.stderr, stats
+    print(stats, file=sys.stderr)
 
 if __name__ == '__main__':
     main()

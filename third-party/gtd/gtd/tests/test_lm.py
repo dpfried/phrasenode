@@ -47,7 +47,7 @@ def test_sample_from_distribution(lm_sampler):
     for k in range(100000):
         ctr[lm_sampler._sample_from_distribution(distr)] += 1
     empirical = normalize_counts(ctr)
-    for key in distr.keys() + empirical.keys():
+    for key in list(distr.keys()) + list(empirical.keys()):
         assert_approx_equal(empirical[key], distr[key], significant=2)
 
 def test_sequence_probability(lm):

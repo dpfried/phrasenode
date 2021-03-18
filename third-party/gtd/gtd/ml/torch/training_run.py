@@ -76,7 +76,7 @@ class TorchTrainingRun(TrainingRun):
             stats (dict[tuple[str], float]): a map from a stat name (expressed as a string tuple) to a float
             step (int): training step that we are on, for Tensorboard plots
         """
-        for path, val in stats.iteritems():
+        for path, val in stats.items():
             # log to TBoard
             name = '_'.join(path)
             self.tb_logger.log_value(name, val, step)

@@ -180,7 +180,7 @@ class TensorDebugger(object):
         names = [orig_fetch] * len(fetches)
 
         # add debug nodes to fetches
-        for name, cand_nodes in self.name_to_nodes.iteritems():
+        for name, cand_nodes in self.name_to_nodes.items():
             # filter nodes by those on execution path
             nodes = []
             for cand in cand_nodes:
@@ -204,7 +204,7 @@ class TensorDebugger(object):
                 bp_results[name].append(result)
 
         # get placeholder values directly from feed_dict
-        for name, placeholders in self.name_to_placeholders.iteritems():
+        for name, placeholders in self.name_to_placeholders.items():
             for placeholder in placeholders:
                 if placeholder in feed_dict:
                     key = placeholder
@@ -221,7 +221,7 @@ class TensorDebugger(object):
 
         # unwrap single-item lists and single-item name tuples
         unwrap = lambda l: l[0] if len(l) == 1 else l
-        bp_results = {unwrap(k): unwrap(v) for k, v in bp_results.iteritems()}
+        bp_results = {unwrap(k): unwrap(v) for k, v in bp_results.items()}
 
         return results, bp_results
 

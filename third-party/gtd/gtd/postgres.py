@@ -158,7 +158,7 @@ class Postgres(object):
         Returns:
             Generator[Dict[str, T]]
         """
-        keys, vals = zip(*fields.items())
+        keys, vals = list(zip(*list(fields.items())))
         field_query = ' AND '.join(['{}=%s'.format(k) for k in keys])
         field_vals = tuple(vals)
         q = self.format("SELECT * from {} where {}", (table_name, field_query), field_vals)
@@ -199,7 +199,7 @@ class Postgres(object):
     def create_table(self, name, col_to_type):
         """Create table if it doesn't exist."""
         if not self.table_exists(name):
-            col_to_type_pairs = [' '.join(i) for i in col_to_type.items()]
+            col_to_type_pairs = [' '.join(i) for i in list(col_to_type.items())]
             col_type_str = ', '.join(col_to_type_pairs)
             q = self.format("CREATE TABLE {} ({})", (name, col_type_str), None)
             self.execute(q)
@@ -216,7 +216,7 @@ class Postgres(object):
             table_name (str)
             row (dict[str, T]): a map from column names to values
         """
-        columns, vals = zip(*row.items())
+        columns, vals = list(zip(*list(row.items())))
         col_str = ', '.join(columns)
         vals = tuple(vals)
         q = self.format("INSERT INTO {} ({}) VALUES %s", (table_name, col_str), (vals,))
@@ -234,10 +234,10 @@ class Postgres(object):
             table_name (str): name of table
             table (dict[str, list]): map from a column name to a list of column values
         """
-        col_names = table.keys()
+        col_names = list(table.keys())
         col_str = ', '.join(col_names)
         unnest = ', '.join(['unnest(%({})s)'.format(n) for n in col_names])
-        for column in table.values():
+        for column in list(table.values()):
             assert isinstance(column, list)  # must be a list for unnest to work
         q = self.format("INSERT INTO {} ({}) SELECT {}", (table_name, col_str, unnest), table)
         self.execute(q)
@@ -258,7 +258,7 @@ class Postgres(object):
         results = list(self.iter_table(name))
         table = defaultdict(list)
         for res in results:
-            for key, val in res.iteritems():
+            for key, val in res.items():
                 table[key].append(val)
         return table
 
@@ -279,7 +279,7 @@ class Postgres(object):
 
 def dict_to_table(d):
     """Convert dict into a two-column table (one col for key, one col for value)."""
-    keys, vals = [list(l) for l in zip(*d.items())]
+    keys, vals = [list(l) for l in zip(*list(d.items()))]
     return {'key': keys, 'val': vals}
 
 

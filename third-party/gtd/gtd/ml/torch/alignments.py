@@ -1,5 +1,5 @@
 from collections import defaultdict
-from itertools import izip
+
 
 import numpy as np
 import torch
@@ -26,7 +26,7 @@ class Alignments(object):
         """
         assert len(source_words) == len(target_words)
         # compute alignments
-        alignments_batch = [self._align(s, t) for s, t in izip(source_words, target_words)]
+        alignments_batch = [self._align(s, t) for s, t in zip(source_words, target_words)]
 
         # compute dimensions of alignment tensor
         batch_size = len(alignments_batch)
@@ -89,4 +89,4 @@ class Alignments(object):
         """
         indices_list = [v.squeeze(1) for v in self.indices.split(1, dim=1)]
         mask_list = [v.squeeze(1) for v in self.mask.split(1, dim=1)]
-        return [SequenceBatch(i, m) for i, m in izip(indices_list, mask_list)]
+        return [SequenceBatch(i, m) for i, m in zip(indices_list, mask_list)]

@@ -31,14 +31,14 @@ class PhraseNodeEvalRun(object):
         self.model = try_gpu(self.model)
 
     def load_model(self, model_file):
-        print 'Loading from file {}'.format(model_file)
+        print('Loading from file {}'.format(model_file))
         try:
             state_dict = torch.load(model_file)
         except:
             logging.warning('Cannot load into GPU. Try CPU.')
             state_dict = torch.load(model_file, map_location='cpu')
         self.model.load_state_dict(state_dict)
-        print 'Model loaded.'
+        print('Model loaded.')
 
     def eval(self, phrase, info):
         # write example and write info
@@ -55,7 +55,7 @@ class PhraseNodeEvalRun(object):
         out = []
         storage = PhraseNodeStorage(data.workspace.phrase_node)
         loaded_examples = storage.load_examples('eval')
-        for _, examples in loaded_examples.items():
+        for _, examples in list(loaded_examples.items()):
             result = self._process_one(examples)
             out.append(result)
         return out[0]

@@ -138,10 +138,10 @@ class FeedSequenceBatch(Feedable, SequenceBatch):
 
         if self._align_right:
             truncate = lambda tokens: tokens[-seq_length:]
-            indices = map(lambda n: [(seq_length - n) + i for i in range(n)], range(seq_length + 1))
+            indices = [[(seq_length - n) + i for i in range(n)] for n in range(seq_length + 1)]
         else:
             truncate = lambda tokens: tokens[:seq_length]
-            indices = map(range, range(seq_length + 1))
+            indices = list(map(range, list(range(seq_length + 1))))
 
         values_arr = np.zeros((batch_size, seq_length), dtype=np.float32)
         mask_arr = np.zeros((batch_size, seq_length), dtype=np.float32)

@@ -1,6 +1,6 @@
 import random
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from abc import ABCMeta
 from collections import defaultdict
 
@@ -70,15 +70,13 @@ def _get_all_hits(get_page):
             executor.submit(i, i)
         for i, page in verboserate(executor.results(), desc='Fetching pages of HITs', total=total_pages):
             if isinstance(page, Failure):
-                print page.traceback
+                print(page.traceback)
                 continue
             for hit in page:
                 yield hit
 
 
-class Task(object):
-    __metaclass__ = ABCMeta
-
+class Task(object, metaclass=ABCMeta):
     def __init__(self, hit_type_id, mtc):
         """Construct task.
 
@@ -161,7 +159,7 @@ class Task(object):
     def report_progress(self):
         completed = len(list(self.get_reviewable_hits()))
         total = len(list(self.get_hits()))
-        print '{}/{} complete'.format(completed, total)
+        print('{}/{} complete'.format(completed, total))
 
     def review_hits(self, print_assignment):
         """Interactively reject/approve all HITs associated with this task."""
@@ -177,13 +175,13 @@ class Task(object):
             try:
                 self._mtc.dispose_hit(assignment.HITId)
             except MTurkRequestError:
-                print 'Failed to dispose HIT {}'.format(assignment.HITId)
+                print('Failed to dispose HIT {}'.format(assignment.HITId))
                 raise
 
         total_workers = len(worker_to_assignments)
         for i, (worker, assignments) in enumerate(worker_to_assignments.items()):
-            print "Answers of worker {} ({} of {}, completed {} HITs):".format(worker, i+1, total_workers,
-                                                                               len(assignments))
+            print("Answers of worker {} ({} of {}, completed {} HITs):".format(worker, i+1, total_workers,
+                                                                               len(assignments)))
 
             while True:
                 assignment = random.choice(assignments)
@@ -192,12 +190,12 @@ class Task(object):
                 answer = self._prompt_yes_no_more()
                 if answer == "y":
                     parallel_call(approve, assignments)
-                    print "Approved all assignments for this worker"
+                    print("Approved all assignments for this worker")
                     break
                 elif answer == "n":
-                    print "Did not approve assignments for this worker"
+                    print("Did not approve assignments for this worker")
                     break
-            print "\n----- ----- ----- ----- ----- ----- ----- ----- ----- ----- \n"
+            print("\n----- ----- ----- ----- ----- ----- ----- ----- ----- ----- \n")
 
     def _prompt_yes_no_more(self):
         """Ask a [y]es/[n]o/[s]ee more question via raw_input() and return their answer.
@@ -207,7 +205,7 @@ class Task(object):
         valid = ["y", "n", "m"]
         while True:
             sys.stdout.write("Approve worker [y/n] or see [m]ore?")
-            choice = raw_input().lower()
+            choice = input().lower()
             if choice in valid:
                 return choice
             else:
@@ -247,8 +245,8 @@ class ExternalQuestionTask(Task):
         assert isinstance(self._price_per_hit, float)
         total_cost = total_hits * self._price_per_hit
 
-        print 'Launching {} HITs (${}). Type Enter to continue.'.format(total_hits, total_cost)
-        raw_input()
+        print('Launching {} HITs (${}). Type Enter to continue.'.format(total_hits, total_cost))
+        input()
 
         parallel_call(self.create_hit, batches)
 
@@ -261,7 +259,7 @@ class ExternalQuestionTask(Task):
         Returns:
             str: HITId
         """
-        param_str = urllib.urlencode({'exampleUIDs': ','.join(ex_uids)})
+        param_str = urllib.parse.urlencode({'exampleUIDs': ','.join(ex_uids)})
         custom_url = '?'.join([self._url, param_str])
         external_question = ExternalQuestion(custom_url, frame_height=500)
         return super(self, ExternalQuestionTask).create_hit(external_question)

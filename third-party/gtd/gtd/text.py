@@ -26,8 +26,8 @@ class NER(object):
 
     def __call__(self, text):
         """Given a unicode string, return a tuple of the named entities found inside."""
-        if not isinstance(text, unicode):
-            text = unicode(text)
+        if not isinstance(text, str):
+            text = str(text)
         doc = self.processor(text)
         return doc.ents
 
@@ -50,7 +50,7 @@ class Trie(object):
             return False
 
         suffix = phrase[1:]
-        for child in self.children.values():
+        for child in list(self.children.values()):
             if suffix in child:
                 return True
 
@@ -190,7 +190,7 @@ def ngram_precision_recall(reference, candidate, n=None):
         prs = []
         for m in [1, 2, 3, 4]:
             prs.append(ngram_precision_recall(reference, candidate, m))
-        ps, rs = zip(*prs)
+        ps, rs = list(zip(*prs))
         return np.mean(ps), np.mean(rs)
 
     ref_set = set(get_ngrams(reference, n))

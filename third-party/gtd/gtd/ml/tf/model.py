@@ -8,9 +8,8 @@ from gtd.ml.tf.seq_batch import FeedSequenceBatch, embed, reduce_mean, SequenceB
 from gtd.ml.vocab import Vocab
 
 
-class Embedder(Feedable):
+class Embedder(Feedable, metaclass=ABCMeta):
     """A map from objects to embeddings."""
-    __metaclass__ = ABCMeta
 
     @abstractproperty
     def embeds(self):
@@ -66,9 +65,8 @@ class TokenEmbedder(Embedder):
         return {}
 
 
-class SequenceEmbedder(Embedder):
+class SequenceEmbedder(Embedder, metaclass=ABCMeta):
     """An embedding matrix for objects that can be represented as sequences (such as sentences)."""
-    __metaclass__ = ABCMeta
 
     def __init__(self, token_embeds, align='left', seq_length=None, name='SequenceEmbedder'):
         """Create a SequenceEmbeddings object.
@@ -224,9 +222,7 @@ class Attention(Model):
         self._projection_layer.set_weights([W, b])
 
 
-class Scorer(Model):
-    __metaclass__ = ABCMeta
-
+class Scorer(Model, metaclass=ABCMeta):
     @abstractproperty
     def scores(self):
         """Return a SequenceBatch."""

@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import namedtuple
-from itertools import izip
+
 
 import torch
 from gtd.ml.torch.recurrent import tile_state, gated_update
@@ -10,9 +10,7 @@ from torch.nn import Parameter
 from gtd.ml.torch.seq_batch import SequenceBatchElement
 
 
-class SourceEncoder(Module):
-    __metaclass__ = ABCMeta
-
+class SourceEncoder(Module, metaclass=ABCMeta):
     @abstractproperty
     def hidden_dim(self):
         raise NotImplementedError
@@ -121,7 +119,7 @@ class BidirectionalEncoderOutput(namedtuple('BidirectionalEncoderOutput', ['forw
             combined_states (list[SequenceBatchElement]): ordered left to right
         """
         combined_states = [SequenceBatchElement(torch.cat([f.values, b.values], 1), f.mask)
-                           for f, b in izip(self.forward_states, self.backward_states)]
+                           for f, b in zip(self.forward_states, self.backward_states)]
         return combined_states
 
     @property
@@ -173,7 +171,7 @@ class MultiLayerSourceEncoder(SourceEncoder):
                 prev_hidden_states = input_embeds_list
             else:
                 prev_hidden_states = [SequenceBatchElement(torch.cat([f.values, b.values], 1), f.mask)
-                                      for f, b in izip(forward_states, backward_states)]
+                                      for f, b in zip(forward_states, backward_states)]
 
             new_forward_states, new_backward_states = layer(prev_hidden_states)
 
@@ -183,7 +181,7 @@ class MultiLayerSourceEncoder(SourceEncoder):
             else:
                 # add residuals to previous hidden states
                 add_residuals = lambda a_list, b_list: [SequenceBatchElement(a.values + b.values, a.mask)
-                                                        for a, b in izip(a_list, b_list)]
+                                                        for a, b in zip(a_list, b_list)]
 
                 forward_states = add_residuals(forward_states, new_forward_states)
                 backward_states = add_residuals(backward_states, new_backward_states)

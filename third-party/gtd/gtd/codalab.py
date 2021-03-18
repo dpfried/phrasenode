@@ -1,5 +1,5 @@
 """Tools for working with CodaLab."""
-import cPickle as pickle
+import pickle as pickle
 import json
 import os
 import platform
@@ -81,7 +81,7 @@ class Bundle(object):
             fields = ('uuid', 'name', 'bundle_type', 'state', 'time', 'remote')
             cmd = 'cl info -w {} -f {} {}'.format(worksheet, ','.join(fields), self.uuid)
             result = shell(cmd)
-            info = dict(zip(fields, result.split()))
+            info = dict(list(zip(fields, result.split())))
             value.update(info)
 
         elif item in ('stderr', 'stdout'):
@@ -107,7 +107,7 @@ class Bundle(object):
 
 def download_logs(bundle, log_dir):
     if bundle.meta['bundle_type'] != 'run' or bundle.meta['state'] == 'queued':
-        print 'Skipped {}\n'.format(bundle.uuid)
+        print('Skipped {}\n'.format(bundle.uuid))
         return
 
     if isinstance(bundle, str):
@@ -119,12 +119,12 @@ def download_logs(bundle, log_dir):
 
     cmd ='cl down -o {} -w {} {}/logs'.format(log_path, worksheet, uuid)
 
-    print uuid
+    print(uuid)
     try:
         shell(cmd, verbose=True)
     except RuntimeError:
-        print 'Failed to download', bundle.uuid
-    print
+        print('Failed to download', bundle.uuid)
+    print()
 
 
 def report(render, uuids=None, reverse=True, limit=None):
@@ -142,26 +142,26 @@ def report(render, uuids=None, reverse=True, limit=None):
         try:
             render(bundle)
         except Exception:
-            print 'Failed to render', bundle.uuid
+            print('Failed to render', bundle.uuid)
 
 
 def monitor_jobs(logdir, uuids=None, reverse=True, limit=None):
     if os.path.exists(logdir):
-        delete = raw_input('Overwrite existing logdir? ({})'.format(logdir))
+        delete = input('Overwrite existing logdir? ({})'.format(logdir))
         if delete == 'y':
             shutil.rmtree(logdir)
             os.makedirs(logdir)
     else:
         os.makedirs(logdir)
-        print 'Using logdir:', logdir
+        print('Using logdir:', logdir)
 
     report(lambda bd: download_logs(bd, logdir), uuids, reverse, limit)
 
 
 def tensorboard(logdir):
-    print 'Run this in bash:'
+    print('Run this in bash:')
     shell('tensorboard --logdir={}'.format(logdir), verbose=True, debug=True)
-    print '\nGo to TensorBoard: http://localhost:6006/'
+    print('\nGo to TensorBoard: http://localhost:6006/')
 
 
 def add_to_sys_path(path):
@@ -212,7 +212,7 @@ def launch_job(job_name, cmd,
         debug: if True, prints SSH commands, but does not execute them
         tail: show the streaming output returned by CodaLab once it launches the job
     """
-    print 'Remember to set up SSH tunnel and LOG IN through the command line before calling this.'
+    print('Remember to set up SSH tunnel and LOG IN through the command line before calling this.')
     options = '-v -n {} -w {} --request-queue {} --request-docker-image {} --request-cpus {}'.format(
         job_name, worksheet, queue, image, cpus)
 
