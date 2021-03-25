@@ -46,12 +46,12 @@ class TrainState(object):
 
         # pickle remaining attributes
         d = {attr: getattr(self, attr) for attr in ['train_steps', 'random_state', 'max_grad_norm']}
-        with open(join(path, 'metadata.p'), 'w') as f:
+        with open(join(path, 'metadata.p'), 'wb') as f:
             pickle.dump(d, f)
 
     @classmethod
     def load(cls, path, model, optimizer):
-        with open(join(path, 'metadata.p'), 'r') as f:
+        with open(join(path, 'metadata.p'), 'rb') as f:
             d = pickle.load(f)
 
         # load model
