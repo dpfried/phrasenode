@@ -8,12 +8,69 @@ from gtd.ml.torch.attention import Attention
 from gtd.ml.torch.seq_batch import SequenceBatch
 from gtd.ml.torch.source_encoder import BidirectionalSourceEncoder
 from gtd.ml.torch.utils import GPUVariable as V
+from transformers import AutoModel, AutoTokenizer
 
 from phrasenode.constants import EOS
 
 
 ################################################
 # Utterance Embedder
+
+class BERTUtteranceEmbedder(nn.Module):
+    """Takes a string, embeds the tokens using the token_embedder, and passes
+    the embeddings through a language model padded / masked up to sequence_length.
+    Returns the concatenation of the two front and end hidden states.
+    """
+
+    def __init__(self, max_words, model_name='bert-base-cased'):
+        """Initialize
+
+        Args:
+            model_name (str): name of model to use
+            max_words (int): maximum number of words to embed
+        """
+        super(BERTUtteranceEmbedder, self).__init__()
+        self._token_embedder = AutoTokenizer.from_pretrained(model_name)
+        self._model = AutoModel.from_pretrained(model_name)
+        self._embed_dim = self._model.config.hidden_size
+        self._max_words = max_words
+        if torch.cuda.is_available():
+            self._device = 'cuda'
+        else:
+            self._device = 'cpu'
+
+    def forward(self, utterances):
+        """Embeds a batch of utterances.
+
+        Args:
+            utterances (list[list[unicode]]): list[unicode] is a list of tokens
+            forming a sentence. list[list[unicode]] is batch of sentences.
+
+        Returns:
+            Variable[FloatTensor]: batch x self._emed_dim
+        """
+        # Cut to max_words + look up indices
+        batch_utterances = [' '.join(utterance[:self._max_words]) for utterance in utterances]
+        encoded_utterances = self._token_embedder(batch_utterances, padding=True)
+        input_ids = torch.tensor(encoded_utterances['input_ids']).to(self._device)
+        attention_mask = torch.tensor(encoded_utterances['attention_mask']).to(self._device)
+        token_type_ids = torch.tensor(encoded_utterances['token_type_ids']).to(self._device)
+        token_embeds = self._model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+        final_states = token_embeds.pooler_output
+        return final_states
+
+    @property
+    def embed_dim(self):
+        return self._embed_dim
+
+    @property
+    def max_words(self):
+        return self._max_words
+
+    @property
+    def token_embedder(self):
+        return self._token_embedder
+
 
 class AverageUtteranceEmbedder(nn.Module):
     """Takes a string, embeds the tokens using the token_embedder,
@@ -121,7 +178,6 @@ class LSTMUtteranceEmbedder(nn.Module):
         return self._token_embedder
 
 
-
 class AttentionUtteranceEmbedder(nn.Module):
     """Takes a string, embeds the tokens using the token_embedder, and passes
     the embeddings through a biLSTM padded / masked up to sequence_length.
@@ -180,4 +236,3 @@ class AttentionUtteranceEmbedder(nn.Module):
     @property
     def token_embedder(self):
         return self._token_embedder
-

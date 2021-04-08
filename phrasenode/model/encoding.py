@@ -19,7 +19,7 @@ from gtd.ml.torch.utils import try_gpu
 
 from phrasenode.constants import UNK, EOS, HIDDEN, TAGS, GraphRels
 from phrasenode.node_filter import get_node_filter
-from phrasenode.utterance_embedder import AverageUtteranceEmbedder, LSTMUtteranceEmbedder
+from phrasenode.utterance_embedder import AverageUtteranceEmbedder, BERTUtteranceEmbedder, LSTMUtteranceEmbedder
 from phrasenode.utils import word_tokenize
 from phrasenode.vocab import GloveEmbeddings, RandomEmbeddings, read_frequency_vocab
 
@@ -215,7 +215,12 @@ def get_encoding_model(config, node_embedder):
     """
     phrase_embedder = node_embedder.utterance_embedder
     node_filter = get_node_filter(config.model.node_filter)
+    if config.model.get('project'):
+        project = True
+    else:
+        project = False
     model = EncodingModel(phrase_embedder, node_embedder, node_filter, config.model.top_k,
             use_neighbors=config.model.use_neighbors,
-            dropout=config.model.dropout)
+            dropout=config.model.dropout,
+            project=project)
     return model

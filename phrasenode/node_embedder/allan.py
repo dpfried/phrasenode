@@ -14,7 +14,7 @@ from gtd.ml.torch.token_embedder import TokenEmbedder
 from gtd.ml.torch.utils import GPUVariable as V
 
 from phrasenode.constants import UNK, EOS, HIDDEN, TAGS, GraphRels
-from phrasenode.utterance_embedder import AverageUtteranceEmbedder, LSTMUtteranceEmbedder, AttentionUtteranceEmbedder
+from phrasenode.utterance_embedder import AverageUtteranceEmbedder, BERTUtteranceEmbedder, LSTMUtteranceEmbedder, AttentionUtteranceEmbedder
 from phrasenode.utils import word_tokenize, word_tokenize2
 from phrasenode.vocab import GloveEmbeddings, RandomEmbeddings, read_frequency_vocab
 
@@ -164,6 +164,8 @@ def make_embedder(token_embedder, config):
         return LSTMUtteranceEmbedder(token_embedder, config.lstm_dim, config.max_words)
     elif config.type == 'attention_lstm':
         return AttentionUtteranceEmbedder(token_embedder, config.lstm_dim, config.max_words)
+    elif config.type == 'bert':
+        return BERTUtteranceEmbedder(config.max_words)
     else:
         raise ValueError('Unknown AttributeEmbedder type {}'.format(config.type))
 
