@@ -1,4 +1,5 @@
 """Utterance embedder"""
+import math
 import torch
 from torch import LongTensor as LT, FloatTensor as FT
 import torch.nn as nn
@@ -39,7 +40,7 @@ class BERTUtteranceEmbedder(nn.Module):
         else:
             self._device = 'cpu'
 
-    def forward(self, utterances):
+    def forward(self, utterances, batch_size=32):
         """Embeds a batch of utterances.
 
         Args:
@@ -50,13 +51,22 @@ class BERTUtteranceEmbedder(nn.Module):
             Variable[FloatTensor]: batch x self._emed_dim
         """
         # Cut to max_words + look up indices
-        batch_utterances = [' '.join(utterance[:self._max_words]) for utterance in utterances]
-        encoded_utterances = self._token_embedder(batch_utterances, padding=True)
-        input_ids = torch.tensor(encoded_utterances['input_ids']).to(self._device)
-        attention_mask = torch.tensor(encoded_utterances['attention_mask']).to(self._device)
-        token_type_ids = torch.tensor(encoded_utterances['token_type_ids']).to(self._device)
-        token_embeds = self._model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
-        final_states = token_embeds.pooler_output
+        num_batches = int(math.ceil(len(utterances) / batch_size))
+        final_states = None
+        for batch_num in range(num_batches):
+            batch_utterances = [' '.join(utterance[:self._max_words])
+                    for utterance in utterances[batch_num * batch_size: (batch_num + 1) * batch_size]]
+            encoded_utterances = self._token_embedder(batch_utterances, padding=True)
+            input_ids = torch.tensor(encoded_utterances['input_ids']).to(self._device)
+            attention_mask = torch.tensor(encoded_utterances['attention_mask']).to(self._device)
+            token_type_ids = torch.tensor(encoded_utterances['token_type_ids']).to(self._device)
+            token_embeds = self._model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+            batch_final_states = token_embeds.pooler_output
+            if batch_num == 0:
+                final_states = batch_final_states
+            else:
+                final_states = torch.cat((final_states, batch_final_states), 0)
+        assert(len(utterances) == len(final_states))
         return final_states
 
     @property
