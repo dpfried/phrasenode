@@ -122,7 +122,8 @@ class PhraseNodeTrainingRun(TorchTrainingRun):
         for step in tqdm(range(min_step, max_step + 1), desc='Training'):
             self.train_state.increment_train_steps()
             assert step == self.train_state.train_steps
-
+            if step < 9:
+                continue
             # Grab a web page from the training dataset
             try:
                 web_page_code, examples = next(train_iterator)
@@ -134,8 +135,10 @@ class PhraseNodeTrainingRun(TorchTrainingRun):
                 web_page_code, examples = next(train_iterator)
 
             # Train
+            print(f'************STEP************: {step}')
             ex_stats = self._process_examples(
                     web_page_code, examples, train=True, logfile=self.logfile)
+            torch.cuda.empty_cache()
             train_stats.add(ex_stats)
 
             # Save the model
@@ -210,10 +213,12 @@ class PhraseNodeTrainingRun(TorchTrainingRun):
         else:
             self.model.eval()
         logits, losses, predictions = self.model(web_page, examples)
+        logits = logits.detach()
+        predictions = predictions.detach()
         # loss
         averaged_loss = torch.sum(losses) / len(examples)
         stats.n = len(examples)
-        stats.loss = float(torch.sum(losses))
+        stats.loss = float(torch.sum(losses).detach())
         # evaluate
         for i, example in enumerate(examples):
             # Top prediction
@@ -263,7 +268,7 @@ class PhraseNodeTrainingRun(TorchTrainingRun):
         # gradient
         if train and averaged_loss.requires_grad:
             averaged_loss.backward()
-            stats.grad_norm = clip_grad_norm(self.model.parameters(), self.gradient_clip)
+            stats.grad_norm = clip_grad_norm(self.model.parameters(), self.gradient_clip).detach().item()
             self.optimizer.step()
         return stats
 
